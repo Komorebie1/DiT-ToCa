@@ -30,7 +30,7 @@ def main():
     parser.add_argument("sample_batch", help="path to sample batch npz file")
     args = parser.parse_args()
 
-    cluster_method = args.sample_batch.split('-')[-1].split('.')[0]
+    cluster_nums, cluster_method, topk, smooth_rate = args.sample_batch.split('.npz')[0].split('/')[-1].split('-')[1:5]
 
     config = tf.ConfigProto(
         allow_soft_placement=True  # allows DecodeJpeg to run on CPU in Inception graph
@@ -63,11 +63,10 @@ def main():
     print("sFID:", sFID)
     print("Precision:", prec)
     print("Recall:", recall)
-    print(f"|method|{IS}|{FID}|{sFID}|{prec}|{recall}|")
     import time
     t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     f = open("results.txt", "a")
-    f.write(f"[{t}]: |{cluster_method}|{IS}|{FID}|{sFID}|{prec}|{recall}|\n")
+    f.write(f"[{t}]: |{cluster_method} {cluster_nums} {topk} {smooth_rate}|{IS}|{FID}|{sFID}|{prec}|{recall}|\n")
 
 
 class InvalidFIDException(Exception):

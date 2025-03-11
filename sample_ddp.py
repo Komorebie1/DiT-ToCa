@@ -88,7 +88,7 @@ def main(args, args_exp):
     #               f"cfg-{args.cfg_scale}-seed-{args.global_seed}-step-{args.num_sampling_steps}-num-{args.num_fid_samples}"\
     #               f"-{args.cache_type}-{args.fresh_ratio}-{args.ratio_scheduler}-{args.force_fresh}-{args.fresh_threshold}"\
     #               f"-softweight-{args.soft_fresh_weight}"
-    folder_name = f"ToCa-{args.cluster_nums}-{args.cluster_method}-{args.topk}-{args.smooth_rate}"
+    folder_name = f"ToCa-{args_exp.cluster_nums}-{args_exp.cluster_method}-{args_exp.topk}-{args_exp.smooth_rate}"
     sample_folder_dir = f"{args.sample_dir}/{folder_name}"
     if rank == 0:
         os.makedirs(sample_folder_dir, exist_ok=True)
@@ -172,7 +172,7 @@ def main(args, args_exp):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, choices=list(DiT_models.keys()), default="DiT-XL/2")
-    parser.add_argument("--vae",  type=str, choices=["ema", "mse"], default="ema")
+    parser.add_argument("--vae",  type=str, choices=["ema", "mse"], default="mse")
     parser.add_argument("--sample-dir", type=str, default="/root/autodl-tmp/samples") # Change this to your desired sample directory
     parser.add_argument("--per-proc-batch-size", type=int, default=32)
     parser.add_argument("--num-fid-samples", type=int, default=50_000)
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     parser.add_argument("--test-FLOPs", action="store_true", default=False)
     #parser.add_argument("--merge-weight", type=float, default=0.0) # never used in the paper, just for exploration
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
     parser_exp = argparse.ArgumentParser()
     parser_exp.add_argument("--cluster-nums", type=int, default=8)
@@ -205,5 +205,8 @@ if __name__ == "__main__":
     parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
     parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
     parser_exp.add_argument("--topk", type=int, default=1)
-    args_exp = parser_exp.parse_args()
+    # args_exp = parser_exp.parse_args()
+
+    args, remaining_args = parser.parse_known_args()
+    args_exp = parser_exp.parse_args(remaining_args)
     main(args, args_exp)

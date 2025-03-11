@@ -11,6 +11,7 @@ def cache_init(model_kwargs, num_steps):
     cache_dic['attn_map'] = {}
     cache_dic['attn_map'][-1] = {}
     cache_dic['centroids'] = None
+    cache_dic['group_info'] = {}
     for j in range(28):
         cache[-1][j] = {}
         cache_index[-1][j] = {}

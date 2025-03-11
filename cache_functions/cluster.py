@@ -4,7 +4,7 @@ import numpy as np
 
 def cluster_scheduler(cache_dic, current):
     if not cache_dic['use_cluster_scheduler']:
-        return cache_dic['cluster_nums'], cache_dic['topK']
+        return cache_dic['cluster_nums'], cache_dic['topk']
     return int(cache_dic['current_cluster_nums'][current['step']]), round(5 - current['step'] / 12)
 
 def get_group_info(cache_dic, current, dims=2):
@@ -13,7 +13,7 @@ def get_group_info(cache_dic, current, dims=2):
     cluster_indices, cache_centroids = get_group_indices_by_x(cache_dic['x'], cluster_nums, cache_dic['cluster_method'], cache_dic['centroids'])
     cache_dic['group_info']['cluster_indices'] = cluster_indices
     cache_dic['group_info']['cluster_nums'] = cluster_nums
-    cache_dic['group_info']['topK'] = k
+    cache_dic['group_info']['topk'] = k
     cache_dic['centroids'] = cache_centroids
 
 

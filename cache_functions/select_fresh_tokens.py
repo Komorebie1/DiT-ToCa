@@ -4,7 +4,7 @@ def get_cluster_topk_indices(score, group_info):
     '''
     找出每个聚类中分数最高的K个索引(用于从每个聚类中找出分数最高的 k 个 token 进行缓存)
     '''
-    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topK']
+    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topk']
     B, N = score.shape
     device = score.device
     
@@ -26,7 +26,7 @@ def get_cluster_topk_indices(score, group_info):
     return topk_indices.view(B, -1)
 
 def get_indices_by_random(group_info):
-    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topK']
+    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topk']
     B, N = cluster_indices.shape
     device = cluster_indices.device
 
@@ -35,7 +35,7 @@ def get_indices_by_random(group_info):
     return fresh_indices
 
 def get_indices_by_random_v2(group_info):
-    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topK']
+    cluster_indices, cluster_nums, K = group_info['cluster_indices'], group_info['cluster_nums'], group_info['topk']
     B, N = cluster_indices.shape
     device = cluster_indices.device    
     # 生成聚类掩码 [B, cluster_nums, N]

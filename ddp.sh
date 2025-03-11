@@ -15,12 +15,13 @@ num_fid_samples=50000
 cluster_steps=10
 cluster_nums=16
 cluster_method="kmeans"
-momentum=0.05
+momentum=0.007
 
 model_string_name="DiT-XL-2"
 ckpt_string_name="pretrained"
 args_vae="mse"
 args_global_seed=0
+topk=1
 
 base_command="torchrun \
     --nnodes=1 \
@@ -39,10 +40,9 @@ base_command="torchrun \
     --soft-fresh-weight $soft_fresh_weight \
     --num-fid-samples $num_fid_samples \
     --ddim-sample \
-    --cluster-steps $cluster_steps \
     --cluster-nums $cluster_nums \
     --cluster-method $cluster_method \
-    --topk 1 \
+    --topk topk \
     "
 
 # cluster_nums=(4 8 16 16 16 16 16 16 16 16 32 32)
