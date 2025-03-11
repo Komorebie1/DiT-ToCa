@@ -18,7 +18,7 @@ from models import DiT_models
 import argparse
 
 
-def main(args):
+def main(args, args_exp):
     # Setup PyTorch:
     torch.manual_seed(args.seed)
     torch.set_grad_enabled(False)
@@ -71,7 +71,9 @@ def main(args):
     model_kwargs['ratio_scheduler']   = args.ratio_scheduler
     model_kwargs['soft_fresh_weight'] = args.soft_fresh_weight
     model_kwargs['test_FLOPs']        = args.test_FLOPs
-        
+    model_kwargs['exp'] = {}
+    for k, v in args_exp.__dict__.items():
+        model_kwargs['exp'][k] = v
 
     start = torch.cuda.Event(enable_timing=True)
     end = torch.cuda.Event(enable_timing=True)
@@ -120,4 +122,11 @@ if __name__ == "__main__":
     #parser.add_argument("--merge-weight", type=float, default=0.0) # never used in the paper, just for exploration
 
     args = parser.parse_args()
-    main(args)
+
+    parser_exp = argparse.ArgumentParser()
+    parser_exp.add_argument("--cluster-nums", type=int, default=8)
+    parser_exp.add_argument("--cluster-method", type=str, choices=['kmeans', 'Agglomerative'], default='kmeans')
+    parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
+    parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
+    args_exp = parser_exp.parse_args()
+    main(args, args_exp)
