@@ -9,6 +9,7 @@ import math
 import numpy as np
 import torch as th
 import enum
+import copy
 
 from .diffusion_utils import discretized_gaussian_log_likelihood, normal_kl
 
@@ -705,6 +706,102 @@ class GaussianDiffusion:
                     eta=eta,
                 )
                 yield out
+                img = out["sample"]
+        if cache_dic['test_FLOPs'] == True:
+            print(cache_dic['flops'] * 1e-12, "TFLOPs")
+
+    def ddim_sample_loop_exp(
+    self,
+    model,
+    shape,
+    noise=None,
+    clip_denoised=True,
+    denoised_fn=None,
+    cond_fn=None,
+    model_kwargs=None,
+    device=None,
+    progress=False,
+    eta=0.0,
+    ):
+        """
+        Generate samples from the model using DDIM.
+        Same usage as p_sample_loop().
+        """
+        final = None
+        samples = []
+        group_infos = []
+        scores = []
+        for sample, group_info, score in self.ddim_sample_loop_progressive_exp(
+            model,
+            shape,
+            noise=noise,
+            clip_denoised=clip_denoised,
+            denoised_fn=denoised_fn,
+            cond_fn=cond_fn,
+            model_kwargs=model_kwargs,
+            device=device,
+            progress=progress,
+            eta=eta,
+        ):
+            final = sample
+            samples.append(final["sample"])
+            group_infos.append(copy.deepcopy(group_info))
+            scores.append(copy.deepcopy(score))
+        return samples, group_infos, scores
+
+    def ddim_sample_loop_progressive_exp(
+        self,
+        model,
+        shape,
+        noise=None,
+        clip_denoised=True,
+        denoised_fn=None,
+        cond_fn=None,
+        model_kwargs=None,
+        device=None,
+        progress=False,
+        eta=0.0,
+    ):
+        """
+        Use DDIM to sample from the model and yield intermediate samples from
+        each timestep of DDIM.
+        Same usage as p_sample_loop_progressive().
+        """
+        if device is None:
+            device = next(model.parameters()).device
+        assert isinstance(shape, (tuple, list))
+        if noise is not None:
+            img = noise
+        else:
+            img = th.randn(*shape, device=device)
+        indices = list(range(self.num_timesteps))[::-1]
+
+        if progress:
+            # Lazy import so that we don't depend on tqdm.
+            from tqdm.auto import tqdm
+
+            indices = tqdm(indices)
+
+        # Initialization for ToCa     
+        cache_dic, current = cache_init(model_kwargs=model_kwargs, num_steps=self.num_timesteps)
+
+        for i in indices:
+            t = th.tensor([i] * shape[0], device=device)
+            with th.no_grad():
+                current['step'] = i
+                out = self.ddim_sample(
+                    model,
+                    img,
+                    t,
+                    current=current,
+                    cache_dic=cache_dic,
+                    clip_denoised=clip_denoised,
+                    denoised_fn=denoised_fn,
+                    cond_fn=cond_fn,
+                    model_kwargs=model_kwargs,
+                    eta=eta,
+                )
+                yield out, cache_dic['group_info'], cache_dic['score']
                 img = out["sample"]
         if cache_dic['test_FLOPs'] == True:
             print(cache_dic['flops'] * 1e-12, "TFLOPs")
