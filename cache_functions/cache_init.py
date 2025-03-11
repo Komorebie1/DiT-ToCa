@@ -10,6 +10,7 @@ def cache_init(model_kwargs, num_steps):
     cache_index['layer_index']={}
     cache_dic['attn_map'] = {}
     cache_dic['attn_map'][-1] = {}
+    cache_dic['centroids'] = None
     for j in range(28):
         cache[-1][j] = {}
         cache_index[-1][j] = {}
@@ -28,6 +29,8 @@ def cache_init(model_kwargs, num_steps):
     cache_dic['soft_fresh_weight']    = model_kwargs['soft_fresh_weight']
     cache_dic['flops']                = 0.0
     cache_dic['test_FLOPs']           = model_kwargs['test_FLOPs'] 
+    for k, v in model_kwargs['exp'].items():
+        cache_dic[k] = v
     
     cache_dic['cache'][-1]['noise_steps'] = {}
     cache_dic['counter'] = 0.0

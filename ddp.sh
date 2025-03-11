@@ -60,14 +60,14 @@ do
 
     if [ $? -eq 0 ]; then
         /root/miniconda3/envs/eval/bin/python evaluator.py /root/autodl-tmp/VIRTUAL_imagenet256_labeled.npz \
-            "/root/autodl-tmp/samples/ToCa-cluster-${cluster_steps}-${cluster_nums}-${cluster_method}.npz"
+            "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
     else
         echo "torchrun 命令执行失败，跳过 evaluator.py"
     fi
 
     if [ $? -eq 0 ]; then
-        rm -rf "/root/autodl-tmp/samples/ToCa-cluster-${cluster_steps}-${cluster_nums}-${cluster_method}"
-        rm  "/root/autodl-tmp/samples/ToCa-cluster-${cluster_steps}-${cluster_nums}-${cluster_method}.npz"
+        rm -rf "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}"
+        rm  "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
     else
         echo "evaluator.py 执行失败，跳过删除文件"
     fi
