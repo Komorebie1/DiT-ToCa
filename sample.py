@@ -121,12 +121,14 @@ if __name__ == "__main__":
     parser.add_argument("--test-FLOPs", action="store_true", default=False)
     #parser.add_argument("--merge-weight", type=float, default=0.0) # never used in the paper, just for exploration
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
     parser_exp = argparse.ArgumentParser()
     parser_exp.add_argument("--cluster-nums", type=int, default=8)
     parser_exp.add_argument("--cluster-method", type=str, choices=['kmeans', 'Agglomerative'], default='kmeans')
     parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
     parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
-    args_exp = parser_exp.parse_args()
+    parser_exp.add_argument("--topk", type=int, default=1)
+    args, remaining_args = parser.parse_known_args()
+    args_exp = parser_exp.parse_args(remaining_args)
     main(args, args_exp)
