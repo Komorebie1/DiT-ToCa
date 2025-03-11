@@ -13,7 +13,7 @@ fresh_threshold=4
 soft_fresh_weight=0.25
 num_fid_samples=50000
 cluster_steps=10
-cluster_nums=16
+cluster_nums=64
 cluster_method="kmeans"
 momentum=0.007
 
@@ -42,7 +42,7 @@ base_command="torchrun \
     --ddim-sample \
     --cluster-nums $cluster_nums \
     --cluster-method $cluster_method \
-    --topk topk \
+    --topk $topk \
     "
 
 # cluster_nums=(4 8 16 16 16 16 16 16 16 16 32 32)
@@ -54,7 +54,7 @@ smooth_rate=0.007
 for ((i=0;i<1;i++))
 do
     # rate=${momentum_rates[i]}
-    rate=0.007
+    rate=0.008
     echo "running with momrntum_rates: $rate"
     eval $base_command --smooth-rate $rate
 
