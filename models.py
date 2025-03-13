@@ -16,7 +16,7 @@ import math
 #from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
 from timm.models.vision_transformer import PatchEmbed, Mlp
 #import os.path as osp
-from cache_functions import global_force_fresh, cache_cutfresh, update_cache, smooth_update_cache, force_init, Attention, cal_type, get_group_info
+from cache_functions import global_force_fresh, cache_cutfresh, update_cache, smooth_update_cache, smooth_update_cache_v2, force_init, Attention, cal_type, get_group_info
 
 
 def modulate(x, shift, scale):
@@ -139,8 +139,7 @@ class DiTBlock(nn.Module):
             force_init(cache_dic, current, x)
             x = x + gate_mlp.unsqueeze(1) * mlp_output
             if current['layer'] == 27:
-                cache_dic['x'] = x
-                get_group_info(cache_dic, current)
+                get_group_info(x, cache_dic, current)
 
         elif current['type'] == 'ToCa':  # Partial Computation: Compute only fresh tokens and save them in cache, no attention token computation in the final version
             shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(c).chunk(6, dim=1)
@@ -149,11 +148,11 @@ class DiTBlock(nn.Module):
             current['module'] = 'mlp'
             fresh_indices, fresh_tokens = cache_cutfresh(cache_dic, x, current)
             fresh_tokens = self.mlp(modulate(self.norm2(fresh_tokens), shift_mlp, scale_mlp))
+            x = x + gate_mlp.unsqueeze(1) * cache_dic['cache'][-1][layer]['mlp']
             if cache_dic['smooth_rate'] > 0.0:
                 smooth_update_cache(fresh_indices, fresh_tokens=fresh_tokens, cache_dic=cache_dic, current=current)
             else:
                 update_cache(fresh_indices, fresh_tokens=fresh_tokens, cache_dic=cache_dic, current=current)
-            x = x + gate_mlp.unsqueeze(1) * cache_dic['cache'][-1][layer]['mlp']
 
         elif current['type'] == 'FORA':
             shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(c).chunk(6, dim=1)
