@@ -39,8 +39,8 @@ def get_group_indices_by_x(token, cluster_nums, cluster_method, cache_centroids=
     # else:
     #     raise ValueError(f'Invalid cluster method: {cluster_method}')
     if cluster_method == 'kmeans':
-        if cache_centroids is None:
-            return kmeans_plus_plus(coords, cluster_nums, p=1)
+        # if cache_centroids is None:
+        #     return kmeans_plus_plus(coords, cluster_nums, p=1)
         return kmeans_clustering(coords, cluster_nums, cache_centroids=cache_centroids, p=1)
     elif cluster_method == 'random':
         return random_cluster_indices(token.shape[0], token.shape[1], cluster_nums, device=token.device), None
