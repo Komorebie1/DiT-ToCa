@@ -23,6 +23,7 @@ from PIL import Image
 import numpy as np
 import math
 import argparse
+import time
 
 
 def create_npz_from_sample_folder(sample_dir, num=50_000):
@@ -109,7 +110,7 @@ def main(args, args_exp):
     pbar = range(iterations)
     pbar = tqdm(pbar) if rank == 0 else pbar
     total = 0
-
+    start_time = time.time()
     for _ in pbar:
         # Sample inputs:
         z = torch.randn(n, model.in_channels, latent_size, latent_size, device=device)
@@ -160,6 +161,12 @@ def main(args, args_exp):
             Image.fromarray(sample).save(f"{sample_folder_dir}/{index:06d}.png")
         total += global_batch_size
 
+    end_time = time.time()
+    if rank == 0:
+        elapsed = end_time - start_time
+        formatted_time = time.strftime("%M:%S", time.gmtime(elapsed))
+        with open(f"./results.txt", "a") as f:
+            f.write(f"Total sampling time: {formatted_time}\n")
     # Make sure all processes have finished saving their samples before attempting to convert to .npz
     dist.barrier()
     if rank == 0:
@@ -201,7 +208,7 @@ if __name__ == "__main__":
 
     parser_exp = argparse.ArgumentParser()
     parser_exp.add_argument("--cluster-nums", type=int, default=8)
-    parser_exp.add_argument("--cluster-method", type=str, choices=['kmeans', 'Agglomerative'], default='kmeans')
+    parser_exp.add_argument("--cluster-method", type=str, choices=['kmeans', 'Agglomerative', 'random'], default='kmeans')
     parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
     parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
     parser_exp.add_argument("--topk", type=int, default=1)
