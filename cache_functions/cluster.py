@@ -5,15 +5,23 @@ import numpy as np
 def cluster_scheduler(cache_dic, current):
     if not cache_dic['use_cluster_scheduler']:
         return cache_dic['cluster_nums'], cache_dic['topk']
-    return int(cache_dic['current_cluster_nums'][current['step']]), round(5 - current['step'] / 12)
+    
+    first_ten_steps = (current['step'] > current['num_steps'] * 0.8)
+    if first_ten_steps:
+        return cache_dic['cluster_nums'], 0
+    return cache_dic['cluster_nums'], cache_dic['topk']
+    # return int(cache_dic['current_cluster_nums'][current['step']]), round(5 - current['step'] / 12)
 
-def get_group_info(cache_dic, current, dims=2):
+def get_group_info(features, cache_dic, current, dims=2):
     cluster_nums, k = cluster_scheduler(cache_dic, current)
-    # cluster_indices = get_group_indices(cache_dic['key_matrix'], cluster_nums, dims=dims, cluster_method=cache_dic['cluster_method'])
-    cluster_indices, cache_centroids = get_group_indices_by_x(cache_dic['x'], cluster_nums, cache_dic['cluster_method'], cache_dic['centroids'])
-    cache_dic['group_info']['cluster_indices'] = cluster_indices
     cache_dic['group_info']['cluster_nums'] = cluster_nums
     cache_dic['group_info']['topk'] = k
+    cache_dic['group_info']['cluster_indices'] = torch.zeros((features.shape[0], features.shape[1]), device=features.device, dtype=torch.int64)
+    if k == 0:
+        return
+    # cluster_indices = get_group_indices(cache_dic['key_matrix'], cluster_nums, dims=dims, cluster_method=cache_dic['cluster_method'])
+    cluster_indices, cache_centroids = get_group_indices_by_x(features, cluster_nums, cache_dic['cluster_method'], None)
+    cache_dic['group_info']['cluster_indices'] = cluster_indices
     cache_dic['centroids'] = cache_centroids
 
 
@@ -23,14 +31,32 @@ def get_group_indices_by_x(token, cluster_nums, cluster_method, cache_centroids=
     '''
     # coords = tsne(token, dims)
     coords = token
+    # return construct_cluster_indices_with_padding(token.shape[0], token.shape[1], cluster_nums, device=token.device), None
+    # if cluster_method == 'kmeans':
+    #     cluster_indices, centroids = kmeans_clustering(coords, cluster_nums, cache_centroids=cache_centroids, p=1)
+    # elif cluster_method in ['spectral', 'Agglomerative', 'DBSCAN']:
+    #     cluster_indices = cluster_by_sklearn_for_token(coords, cluster_nums, cluster_method)
+    # else:
+    #     raise ValueError(f'Invalid cluster method: {cluster_method}')
     if cluster_method == 'kmeans':
-        cluster_indices, centroids = kmeans_clustering(coords, cluster_nums, cache_centroids=cache_centroids, p=1)
-    elif cluster_method in ['spectral', 'Agglomerative', 'DBSCAN']:
-        cluster_indices = cluster_by_sklearn_for_token(coords, cluster_nums, cluster_method)
+        if cache_centroids is None:
+            return kmeans_plus_plus(coords, cluster_nums, p=1)
+        return kmeans_clustering(coords, cluster_nums, cache_centroids=cache_centroids, p=1)
+    elif cluster_method == 'random':
+        return random_cluster_indices(token.shape[0], token.shape[1], cluster_nums, device=token.device), None
     else:
         raise ValueError(f'Invalid cluster method: {cluster_method}')
-    return cluster_indices, centroids
 
+def construct_cluster_indices_with_padding(B, N, C, device):
+    segment_length = N // C
+    cluster_indices = torch.arange(C, dtype=torch.long, device=device).repeat_interleave(segment_length)
+    cluster_indices = cluster_indices.unsqueeze(0).expand(B, -1)
+
+    return cluster_indices
+
+def random_cluster_indices(B, N, C, device):
+    cluster_indices = torch.randint(0, C, (B, N), device=device)
+    return cluster_indices
 
 def kmeans_clustering(tokens, cluster_num, cache_centroids=None, max_iters=100, p=2):
     B, N, D = tokens.shape
@@ -54,6 +80,18 @@ def kmeans_clustering(tokens, cluster_num, cache_centroids=None, max_iters=100, 
         centroids = centroids_new
     
     return labels, centroids
+
+def kmeans_plus_plus(tokens, cluster_num, max_iters=100, p=2):
+    B, N, D = tokens.shape
+    device = tokens.device
+    from sklearn.cluster import KMeans
+    kmeans = KMeans(n_clusters=cluster_num, init='k-means++', n_init=1, max_iter=max_iters, random_state=0)
+    cluster_indices = np.zeros((B, N), dtype=np.int64)
+    centroids = np.zeros((B, cluster_num, D), dtype=np.float32)
+    for b in range(B):
+        cluster_indices[b] = kmeans.fit_predict(tokens[b])
+        centroids[b] = kmeans.cluster_centers_
+    return torch.tensor(cluster_indices, device=device), torch.tensor(centroids, device=device)
 
 def cluster_by_sklearn(similarity_matrix, cluster_nums, method = "Agglomerative"):
     import sklearn.cluster
