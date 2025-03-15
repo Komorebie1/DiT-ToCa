@@ -1,3 +1,6 @@
+'''
+该文件包含了一些用于可视化实验的函数
+'''
 import PIL
 import torch
 import numpy as np

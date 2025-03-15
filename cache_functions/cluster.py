@@ -14,10 +14,8 @@ def get_cluster_info(features, cache_dic, current):
     cache_dic['cluster_info']['cluster_indices'] = torch.zeros((features.shape[0], features.shape[1]), device=features.device, dtype=torch.int64)
     if k == 0:
         return
-    cluster_indices, cache_centroids, sum_per_cluster, count_per_cluster = get_cluster_indices_by_features(features, cluster_nums, cache_dic['cluster_method'], None)
+    cluster_indices, cache_centroids = get_cluster_indices_by_features(features, cluster_nums, cache_dic['cluster_method'], None)
     cache_dic['cluster_info']['cluster_indices'] = cluster_indices
-    cache_dic['cluster_info']['sum_per_cluster'] = sum_per_cluster
-    cache_dic['cluster_info']['count_per_cluster'] = count_per_cluster
     cache_dic['centroids'] = cache_centroids
 
 
@@ -31,7 +29,7 @@ def get_cluster_indices_by_features(features, cluster_nums, cluster_method, cach
             cache_centroids = kmeans_plusplus(coords, cluster_nums)
         return kmeans_clustering(coords, cluster_nums, cache_centroids=cache_centroids, p=1)
     elif cluster_method == 'random':
-        return random_cluster_indices(features.shape[0], features.shape[1], cluster_nums, device=features.device), None, None, None
+        return random_cluster_indices(features.shape[0], features.shape[1], cluster_nums, device=features.device), None
     else:
         raise ValueError(f'Invalid cluster method: {cluster_method}')
 
@@ -60,22 +58,20 @@ def kmeans_clustering(features, cluster_num, cache_centroids=None, max_iters=100
     else:
         centroids = features[torch.arange(B, device=device)[:, None], torch.randint(0, N, (B, cluster_num), device=device)]
     
-    sum_per_cluster, count_per_cluster = None, None
     for _ in range(max_iters):
         dists = torch.cdist(features, centroids, p=p)  # [B, N, K]
         labels = dists.argmin(dim=-1)  # [B, N]
         one_hot = F.one_hot(labels, num_classes=cluster_num).type_as(features)  # [B, N, K]
-        count_per_cluster = one_hot.sum(dim=1) + 1e-8  # [B, K]
-        sum_per_cluster = torch.bmm(
+        counts = one_hot.sum(dim=1) + 1e-8  # [B, K]
+        centroids_new = torch.bmm(
             one_hot.permute(0, 2, 1),  # [B, K, N]
             features                        # [B, N, D]
-        )
-        centroids_new = sum_per_cluster / count_per_cluster.unsqueeze(-1)         # [B, K, 1]
+        ) / counts.unsqueeze(-1)         # [B, K, D]
         if torch.allclose(centroids, centroids_new, rtol=1e-4):
             break
         centroids = centroids_new
     
-    return labels, centroids, sum_per_cluster, count_per_cluster
+    return labels, centroids
 
 def kmeans_plusplus(features: torch.Tensor, cluster_nums: int):
     '''
