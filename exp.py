@@ -10,10 +10,10 @@ def check_dir(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-def visual_batch_cluster(samples, group_info, class_labels, dir, vkwargs):
+def visual_batch_cluster(samples, cluster_info, class_labels, dir, vkwargs):
     check_dir(dir)
-    cluster_indices = group_info['cluster_indices']
-    cluster_nums = group_info['cluster_nums']
+    cluster_indices = cluster_info['cluster_indices']
+    cluster_nums = cluster_info['cluster_nums']
     cols = samples.shape[0]
     samples = samples.sub_(samples.min()).div_(samples.max() - samples.min())
     samples = samples.mul(255).add_(0.5).clamp_(0, 255).permute(0, 2, 3, 1).to("cpu", torch.uint8).numpy()
@@ -35,9 +35,9 @@ def visual_batch_cluster(samples, group_info, class_labels, dir, vkwargs):
     plt.savefig(os.path.join(dir, f"{name}.png"))
     plt.close()
 
-def visualize_group(group_info, dir):
+def visualize_group(cluster_info, dir):
     check_dir(dir)
-    cluster_indices = group_info['cluster_indices']
+    cluster_indices = cluster_info['cluster_indices']
     h = w = int(cluster_indices.shape[1] ** 0.5)
     labels = cluster_indices[0].reshape(h, w).cpu().numpy()
     plt.imshow(labels)
@@ -45,12 +45,12 @@ def visualize_group(group_info, dir):
         os.makedirs(dir)
     plt.savefig(os.path.join(dir, f'cluster.png'))
 
-def visualize_clustering_difference(group_info_list, class_labels, dir):
+def visualize_clustering_difference(cluster_info_list, class_labels, dir):
     check_dir(dir)
     for idx, class_label in enumerate(class_labels):
         difference_list = []
-        for i in range(len(group_info_list) - 1):
-            difference = clustering_difference(group_info_list[i], group_info_list[i + 1], idx)
+        for i in range(len(cluster_info_list) - 1):
+            difference = clustering_difference(cluster_info_list[i], cluster_info_list[i + 1], idx)
             difference_list.append(difference)
 
         plt.plot(difference_list)
@@ -61,10 +61,10 @@ def visualize_clustering_difference(group_info_list, class_labels, dir):
         plt.close()
         
 
-def clustering_difference(group_info1, group_info2, batch_idx):
-    labels1 = group_info1['cluster_indices'][batch_idx].cpu().numpy()
-    labels2 = group_info2['cluster_indices'][batch_idx].cpu().numpy()
-    k = group_info1['cluster_nums']
+def clustering_difference(cluster_info1, cluster_info2, batch_idx):
+    labels1 = cluster_info1['cluster_indices'][batch_idx].cpu().numpy()
+    labels2 = cluster_info2['cluster_indices'][batch_idx].cpu().numpy()
+    k = cluster_info1['cluster_nums']
     
     confusion = np.zeros((k, k), dtype=int)
     for l1, l2 in zip(labels1, labels2):
@@ -94,7 +94,7 @@ def visualize_score(score, dir, step, layer, topK = 50):
 def visualize_cluster_max_min_token_per_dim(tokens:torch.Tensor, cache_dic, current):
     B, N, dim = tokens.shape
     step, layer = current['step'], current['layer']
-    cluster_indices, cluster_nums = cache_dic['group_info']['cluster_indices'], cache_dic['group_info']['cluster_nums']
+    cluster_indices, cluster_nums = cache_dic['cluster_info']['cluster_indices'], cache_dic['cluster_info']['cluster_nums']
 
     for cluster_idx in range(cluster_nums):
         mask = cluster_indices[0] == cluster_idx
@@ -163,7 +163,7 @@ def plot_frequency_distribution(data, dir, step, layer, figsize=(10, 6), color='
         plt.close()
 
 def get_cluster0_entropy(tokens, cache_dic, current, batch_idx=0):
-    cluster_indices, cluster_nums = cache_dic['group_info']['cluster_indices'], cache_dic['group_info']['cluster_nums']
+    cluster_indices, cluster_nums = cache_dic['cluster_info']['cluster_indices'], cache_dic['cluster_info']['cluster_nums']
     B, N, dim = tokens.shape
     step, layer = current['step'], current['layer']
     mask = cluster_indices[batch_idx] == 0
@@ -216,7 +216,7 @@ def entropy_kde(x: torch.Tensor, h: float = None, eps: float = 1e-10) -> torch.T
 def get_entropy(tokens, cache_dic, current, batch_idx=0):
     if cache_dic['cluster_method'] == 'DBSCAN':
         return get_entropy_for_DBSCAN(tokens, cache_dic, current)
-    cluster_indices, cluster_nums = cache_dic['group_info']['cluster_indices'], cache_dic['group_info']['cluster_nums']
+    cluster_indices, cluster_nums = cache_dic['cluster_info']['cluster_indices'], cache_dic['cluster_info']['cluster_nums']
     B, N, dim = tokens.shape
     step, layer = current['step'], current['layer']
     cluster_indices0 = cluster_indices[0]
@@ -230,7 +230,7 @@ def get_entropy(tokens, cache_dic, current, batch_idx=0):
     return entropy
 
 def get_entropy_for_DBSCAN(x, cache_dic, current):
-    cluster_indices = cache_dic['group_info']['cluster_indices']
+    cluster_indices = cache_dic['cluster_info']['cluster_indices']
     cluster_indices = cluster_indices[0].cpu().numpy()
     _, counts = np.unique(cluster_indices, return_counts=True)
     total_tokens = len(cluster_indices)

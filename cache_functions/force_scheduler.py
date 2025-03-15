@@ -16,4 +16,8 @@ def force_scheduler(cache_dic, current):
         # We find that in these 20% steps, the model is extremely sensitive for cache, i.e. worse temporal redundancy.
         threshold = 2
 
+    # # 均匀 scheduler
+    # if cache_dic['fixed_fresh_threshold']:
+    #     threshold = cache_dic['fresh_threshold']
+
     cache_dic['cal_threshold'] = 4

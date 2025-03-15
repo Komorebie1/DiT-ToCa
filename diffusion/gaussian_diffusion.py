@@ -729,9 +729,9 @@ class GaussianDiffusion:
         """
         final = None
         samples = []
-        group_infos = []
+        cluster_infos = []
         scores = []
-        for sample, group_info, score in self.ddim_sample_loop_progressive_exp(
+        for sample, cluster_info, score in self.ddim_sample_loop_progressive_exp(
             model,
             shape,
             noise=noise,
@@ -745,9 +745,9 @@ class GaussianDiffusion:
         ):
             final = sample
             samples.append(final["sample"])
-            group_infos.append(copy.deepcopy(group_info))
+            cluster_infos.append(copy.deepcopy(cluster_info))
             scores.append(copy.deepcopy(score))
-        return samples, group_infos, scores
+        return samples, cluster_infos, scores
 
     def ddim_sample_loop_progressive_exp(
         self,
@@ -801,7 +801,7 @@ class GaussianDiffusion:
                     model_kwargs=model_kwargs,
                     eta=eta,
                 )
-                yield out, cache_dic['group_info'], cache_dic['score']
+                yield out, cache_dic['cluster_info'], cache_dic['score']
                 img = out["sample"]
         if cache_dic['test_FLOPs'] == True:
             print(cache_dic['flops'] * 1e-12, "TFLOPs")

@@ -12,8 +12,7 @@ force_fresh="global"
 fresh_threshold=4
 soft_fresh_weight=0.25
 num_fid_samples=50000
-cluster_steps=10
-cluster_nums=64
+cluster_nums=16
 cluster_method="kmeans"
 momentum=0.007
 
@@ -54,8 +53,8 @@ smooth_rate=0.007
 for ((i=0;i<1;i++))
 do
     # rate=${momentum_rates[i]}
-    rate=0.008
-    echo "running with momrntum_rates: $rate"
+    rate=0.007
+    echo "running with smooth_rates: $rate"
     eval $base_command --smooth-rate $rate
 
     if [ $? -eq 0 ]; then

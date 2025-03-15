@@ -166,6 +166,10 @@ def main(args, args_exp):
         elapsed = end_time - start_time
         formatted_time = time.strftime("%M:%S", time.gmtime(elapsed))
         with open(f"./results.txt", "a") as f:
+            f.write(f'fresh-threshold: {args.fresh_threshold}  ')
+            for k, v in args_exp.__dict__.items():
+                f.write(f"{k}: {v}  ")
+            f.write('\n')
             f.write(f"Total sampling time: {formatted_time}\n")
     # Make sure all processes have finished saving their samples before attempting to convert to .npz
     dist.barrier()
@@ -212,6 +216,8 @@ if __name__ == "__main__":
     parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
     parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
     parser_exp.add_argument("--topk", type=int, default=1)
+    parser_exp.add_argument("--fixed-fresh-threshold", action="store_true", default=False)
+    parser_exp.add_argument("--use-origin-ToCa", action="store_true", default=False)
     # args_exp = parser_exp.parse_args()
 
     args, remaining_args = parser.parse_known_args()
