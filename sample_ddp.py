@@ -72,12 +72,12 @@ def main(args, args_exp):
         num_classes=args.num_classes
     ).to(device)
     # Auto-download a pre-trained model or load a custom DiT checkpoint from train.py:
-    ckpt_path = args.ckpt or f"/root/autodl-tmp/pretrained_models/DiT/DiT-XL-2-{args.image_size}x{args.image_size}.pt"
+    ckpt_path = args.ckpt or f"/root/Downloads/pretrained_models/DiT/DiT-XL-2-{args.image_size}x{args.image_size}.pt"
     state_dict = find_model(ckpt_path)
     model.load_state_dict(state_dict)
     model.eval()  # important!
     diffusion = create_diffusion(str(args.num_sampling_steps))
-    vae = AutoencoderKL.from_pretrained(f"/root/autodl-tmp/pretrained_models/stabilityai/sd-vae-ft-{args.vae}").to(device)
+    vae = AutoencoderKL.from_pretrained(f"/root/Downloads/pretrained_models/stabilityai/sd-vae-ft-{args.vae}").to(device)
     #vae = AutoencoderKL.from_pretrained(f"/root/autodl-tmp/pretrained_models").to(device)
     assert args.cfg_scale >= 1.0, "In almost all cases, cfg_scale be >= 1.0"
     using_cfg = args.cfg_scale > 1.0
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, choices=list(DiT_models.keys()), default="DiT-XL/2")
     parser.add_argument("--vae",  type=str, choices=["ema", "mse"], default="mse")
-    parser.add_argument("--sample-dir", type=str, default="/root/autodl-tmp/samples") # Change this to your desired sample directory
+    parser.add_argument("--sample-dir", type=str, default="/root/Documents/zhengzx/samples") # Change this to your desired sample directory
     parser.add_argument("--per-proc-batch-size", type=int, default=32)
     parser.add_argument("--num-fid-samples", type=int, default=50_000)
     parser.add_argument("--image-size", type=int, choices=[256, 512], default=256)
