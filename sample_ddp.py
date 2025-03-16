@@ -216,6 +216,8 @@ if __name__ == "__main__":
     parser_exp.add_argument("--use-cluster-scheduler", action="store_true", default=False)
     parser_exp.add_argument("--smooth-rate", type=float, default=0.0)
     parser_exp.add_argument("--topk", type=int, default=1)
+    parser_exp.add_argument("--fixed-fresh-threshold", action="store_true", default=False)
+    parser_exp.add_argument("--use-origin-ToCa", action="store_true", default=False)
     # args_exp = parser_exp.parse_args()
 
     args, remaining_args = parser.parse_known_args()

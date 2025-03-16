@@ -1,9 +1,11 @@
 import torch
 
 def get_cluster_topk_indices(score, cluster_info):
+def get_cluster_topk_indices(score, cluster_info):
     '''
     找出每个聚类中分数最高的K个索引(用于从每个聚类中找出分数最高的 k 个 token 进行缓存)
     '''
+    cluster_indices, cluster_nums, K = cluster_info['cluster_indices'], cluster_info['cluster_nums'], cluster_info['topk']
     cluster_indices, cluster_nums, K = cluster_info['cluster_indices'], cluster_info['cluster_nums'], cluster_info['topk']
     B, N = score.shape
     device = score.device
