@@ -66,7 +66,7 @@ def main():
     import time
     t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     f = open("results.txt", "a")
-    f.write(f"[{t}]: |{cluster_method} {cluster_nums} {topk} {smooth_rate}|{IS}|{FID}|{sFID}|{prec}|{recall}|\n")
+    f.write(f"[{t}]: |{IS}|{FID}|{sFID}|{prec}|{recall}|\n")
 
 
 class InvalidFIDException(Exception):

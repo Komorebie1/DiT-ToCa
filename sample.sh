@@ -10,9 +10,10 @@ base_command="python sample.py \
     --force-fresh global \
     --soft-fresh-weight 0.25 \
     --ddim-sample \
-    --cluster-steps 10 \
-    --cluster-nums 256 \
-    --cluster-method kmeans
+    --cluster-nums 16 \
+    --cluster-method kmeans \
+    --smooth-rate 0.007 \
+    --topk 1 \
     "
 
 eval $base_command

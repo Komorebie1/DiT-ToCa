@@ -23,7 +23,7 @@ def smooth_update_cache(fresh_indices, fresh_tokens, cache_dic, current):
     layer = current['layer']
     module = current['module']
 
-    group_info = cache_dic['group_info']
+    group_info = cache_dic['cluster_info']
     cluster_indices = group_info['cluster_indices']
     cluster_nums = group_info['cluster_nums']
     smooth_rate = cache_dic['smooth_rate']
@@ -53,6 +53,9 @@ def smooth_update_cache(fresh_indices, fresh_tokens, cache_dic, current):
     expanded_cluster_indices = cluster_indices.unsqueeze(-1).expand(-1, -1, dim)
     new_cache = mean_per_cluster.gather(1, expanded_cluster_indices)
 
+    empty_clusters = (count_per_cluster == 0).gather(1, cluster_indices).unsqueeze(-1).expand(-1, -1, dim)
+
     cand_cache = new_cache * smooth_rate + tokens * (1 - smooth_rate)
-    cache_dic['cache'][-1][layer][module] = torch.where(torch.isnan(new_cache), tokens, cand_cache)
+    # cache_dic['cache'][-1][layer][module] = torch.where(torch.isnan(new_cache), tokens, cand_cache)
+    cache_dic['cache'][-1][layer][module] = torch.where(empty_clusters, tokens, cand_cache)
     cache_dic['cache'][-1][layer][module].scatter_(dim=1, index=fresh_indices.unsqueeze(-1).expand(-1, -1, dim), src=fresh_tokens)

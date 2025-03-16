@@ -166,6 +166,10 @@ def main(args, args_exp):
         elapsed = end_time - start_time
         formatted_time = time.strftime("%M:%S", time.gmtime(elapsed))
         with open(f"./results.txt", "a") as f:
+            f.write(f'fresh-threshold: {args.fresh_threshold}  ')
+            for k, v in args_exp.__dict__.items():
+                f.write(f"{k}: {v}  ")
+            f.write('\n')
             f.write(f"Total sampling time: {formatted_time}\n")
     # Make sure all processes have finished saving their samples before attempting to convert to .npz
     dist.barrier()
