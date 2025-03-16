@@ -57,16 +57,16 @@ do
     eval $base_command --smooth-rate $rate
 
     if [ $? -eq 0 ]; then
-        /root/miniconda3/envs/eval/bin/python evaluator.py /root/autodl-tmp/VIRTUAL_imagenet256_labeled.npz \
-            "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
+        /root/miniconda3/envs/eval/bin/python evaluator.py /home/tiger/Downloads/VIRTUAL_imagenet256_labeled.npz \
+            "/home/tiger/Documents/zhengzx/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
     else
-        echo "torchrun 命令执行失败，跳过 evaluator.py"
+        echo "torchrun failed, skip evaluator.py"
     fi
 
     if [ $? -eq 0 ]; then
-        rm -rf "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}"
-        rm  "/root/autodl-tmp/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
+        rm -rf "/home/tiger/Documents/zhengzx/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}"
+        rm  "/home/tiger/Documents/zhengzx/samples/ToCa-${cluster_nums}-${cluster_method}-${topk}-${rate}.npz"
     else
-        echo "evaluator.py 执行失败，跳过删除文件"
+        echo "evaluator.py failed, skip removing files"
     fi
 done
