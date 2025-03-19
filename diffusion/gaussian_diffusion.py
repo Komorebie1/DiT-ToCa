@@ -709,6 +709,7 @@ class GaussianDiffusion:
                 img = out["sample"]
         if cache_dic['test_FLOPs'] == True:
             print(cache_dic['flops'] * 1e-12, "TFLOPs")
+        # print(f"update cache took {cache_dic['update_cache_time']} seconds")
 
     def ddim_sample_loop_exp(
     self,

@@ -1,7 +1,7 @@
 from .fresh_ratio_scheduler import fresh_ratio_scheduler
 from .score_evaluate import score_evaluate
 from .token_merge import token_merge
-from .select_fresh_tokens import get_indices_by_random
+from .select_fresh_tokens import get_indices_by_random, select_one_fresh_index_per_cluster
 import torch
 def cache_cutfresh(cache_dic, tokens, current):
     '''
@@ -30,9 +30,9 @@ def cache_cutfresh(cache_dic, tokens, current):
     # ------------------------------
 
     # fresh_indices = get_cluster_topk_indices(score, cache_dic['group_info'])
-    fresh_indices = get_indices_by_random(cache_dic['cluster_info'])
+    # fresh_indices = get_indices_by_random(cache_dic['cluster_info'])
+    fresh_indices = select_one_fresh_index_per_cluster(cache_dic, current)
 
-    
     fresh_indices_expand = fresh_indices.unsqueeze(-1).expand(-1, -1, tokens.shape[-1])
 
     if module in ['mlp', 'attn']:

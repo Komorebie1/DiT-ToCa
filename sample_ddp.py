@@ -19,6 +19,7 @@ from diffusion import create_diffusion
 from diffusers.models import AutoencoderKL
 from tqdm import tqdm
 import os
+os.environ['NCCL_DEBUG'] = 'WARNING'
 from PIL import Image
 import numpy as np
 import math
@@ -174,7 +175,7 @@ def main(args, args_exp):
     # Make sure all processes have finished saving their samples before attempting to convert to .npz
     dist.barrier()
     if rank == 0:
-        create_npz_from_sample_folder(sample_folder_dir, args.num_fid_samples)
+        # create_npz_from_sample_folder(sample_folder_dir, args.num_fid_samples)
         print("Done.")
     dist.barrier()
     dist.destroy_process_group()

@@ -6,7 +6,7 @@ class Kmeans:
         self.n_clusters = n_clusters
         self.max_iters = max_iters
         self.init = init
-        self.p = p # 1 for L1 distance, 2 for ecudild distance
+        self.p = p # 1 for Manhattan distance, 2 for Euclid distance
 
     def fit(self, X, cache_centroids=None):
         if cache_centroids is not None:
@@ -33,8 +33,8 @@ class Kmeans:
         if self.init == 'random':
             return X[torch.arange(B, device=device)[:, None], torch.randint(0, N, (B, self.n_clusters), device=device)]
         elif self.init == 'kmeans++':
-            # 还没试过效果
-            return self.kmeans_plusplus(X, self.n_clusters)
+            # didn't test yet
+            return self.kmeans_plusplus(X)
         else:
             raise ValueError(f'Invalid init method: {self.init}')
 
@@ -52,7 +52,7 @@ class Kmeans:
         centers[:, 0] = X[batch_indices, sample_indices]
 
         for i in range(1, self.n_clusters):
-            dist = torch.cdist(X, centers[:, :i], p=1)  # (B, N, i)
+            dist = torch.cdist(X, centers[:, :i], p=self.p)  # (B, N, i)
             min_dist, _ = dist.min(dim=-1)  # (B, N)
             min_dist_sq = min_dist ** 2  # 距离平方
 
@@ -63,4 +63,3 @@ class Kmeans:
             centers[:, i] = X[batch_indices, next_idx]
 
         return centers
-        

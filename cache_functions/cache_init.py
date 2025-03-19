@@ -4,6 +4,7 @@ def cache_init(model_kwargs, num_steps):
     '''
     cache_dic = {}
     cache = {}
+    cluster_cache = {}
     cache_index = {}
     cache[-1]={}
     cache_index[-1]={}
@@ -12,6 +13,7 @@ def cache_init(model_kwargs, num_steps):
     cache_dic['attn_map'][-1] = {}
     cache_dic['centroids'] = None
     cache_dic['cluster_info'] = {}
+    cache_dic['update_cache_time'] = 0.0
     for j in range(28):
         cache[-1][j] = {}
         cache_index[-1][j] = {}
@@ -33,6 +35,11 @@ def cache_init(model_kwargs, num_steps):
     for k, v in model_kwargs['exp'].items():
         cache_dic[k] = v
     
+    for i in range(cache_dic['cluster_nums']):
+        cluster_cache[i] = {}
+        for j in range(28):
+            cluster_cache[i][j] = {}
+    cache_dic['cluster_cache'] = cluster_cache
     cache_dic['cache'][-1]['noise_steps'] = {}
     cache_dic['counter'] = 0.0
     

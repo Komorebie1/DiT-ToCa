@@ -10,10 +10,17 @@ base_command="python sample.py \
     --force-fresh global \
     --soft-fresh-weight 0.25 \
     --ddim-sample \
-    --cluster-nums 16 \
     --cluster-method kmeans \
+    --cluster-nums 16 \
     --smooth-rate 0.007 \
     --topk 1 \
     "
 
 eval $base_command
+# for ((i=5;i<65;i++))
+# do
+#     echo "Running with cluster_nums=${i}"
+#     command="${base_command} --cluster-nums ${i}"
+#     echo $command
+#     $command
+# done

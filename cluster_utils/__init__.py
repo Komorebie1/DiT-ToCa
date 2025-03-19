@@ -6,7 +6,7 @@ def cluster_scheduler(cache_dic, current):
 
 def get_cluster_info(X, cache_dic, current):
     cluster_nums, k = cluster_scheduler(cache_dic, current)
-    cluster_indices, cache_centroids = Kmeans(n_clusters=cluster_nums, init='random').fit(X, cache_dic['centroids'])
+    cluster_indices, cache_centroids= Kmeans(n_clusters=cluster_nums, init='kmeans++', p=1).fit(X, cache_dic['centroids'])
     cache_dic['cluster_info']['cluster_nums'] = cluster_nums
     cache_dic['cluster_info']['topk'] = k
     cache_dic['cluster_info']['cluster_indices'] = cluster_indices
